@@ -1,8 +1,9 @@
 
 volatile unsigned char *portDDRE = (unsigned char *) 0x2d;
 volatile unsigned char *portE =    (unsigned char *) 0x2e;
-// int dir1=4;
-// int dir2=3;
+//For the fan to spin forwards the following must be set:
+//The pin connected to IN1 -> LOW
+//The pin connected to IN2 -> HIGH
 void setup() {
   Serial.begin(9600);
   *portDDRE |= 0x01 << 5;//sets pin2 (IN1) to OUTPUT
