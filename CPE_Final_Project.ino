@@ -1,4 +1,5 @@
 //Authors: Dylan Seibel, Adam Montgomery, Jackson Loughmiller, and Jackson Palmer
+//Date: 05/06/2025
 
 #include <dht.h>
 #include <LiquidCrystal.h>
@@ -51,7 +52,7 @@ unsigned long previousMillis = 0;
 #define MINUTE 60000
 
 //Water Level Threshold and State
-unsigned int threshold = 200;
+unsigned int threshold = 150;
 bool errorState = 0;
 
 //Stepper Motor Global Variables: currently set to rotate vent 180 degrees @ speed 15
@@ -62,7 +63,7 @@ Stepper myStepper = Stepper(stepsPerRevolution, 42, 47, 43, 48);
 //DHT Sensor Values
 dht DHT;
 #define DHT_PIN 4
-#define TEMP_THRES 20
+#define TEMP_THRES 21
 bool tempHigh = 0;
 
 //LCD Initialization
@@ -226,8 +227,6 @@ void loop() {
 
     //Check if reset button has been pressed
     if(*pinB & (0x01 << 7)){
-      *portJ &= ~(0x01 << 1);
-      *portE |= (0x01 << 5);
       errorState = 0;
       currentState = 1;
     }
@@ -240,31 +239,53 @@ void loop() {
 
     //Do this if in error state
     if(errorState == 1){
-      *portJ |= (0x01 << 1);
-      *portE &= ~(0x01 << 3);
-      *portE &= ~(0x01 << 5);
       *portH &= ~(0x01<< 3);
     }
 
     //Reset properly from error state
     if(errorState == 0 && !tempHigh){
-      *portE |= (0x01 << 5);
       currentState = 1;
     }
-    *portJ &= ~(0x01);
 
     //Check tempature if not in error state and trigger running state
     if(temperatureIsHigh() && !errorState){
-      *portE |= (0x01 << 3);
-      *portE &= ~(0x01 << 5);
       *portH |= 0x01<< 3;
       tempHigh = 1;
-      currentState = 2;
+      currentState = 2; 
     }else if(!temperatureIsHigh()){
-      *portE &= ~(0x01 << 3);
-      *portE |= (0x01 << 5);
       *portH &= ~(0x01<< 3);
       tempHigh = 0;
+    }
+    
+    //Trigger Light Changes
+    switch(currentState){
+      case 0:
+        *portJ |= (0x01);
+        *portE &= ~(0x01 << 3);
+        *portE &= ~(0x01 << 5);
+        *portJ &= ~(0x01 << 1);
+        break;
+      
+      case 1:
+        *portJ &= ~(0x01);
+        *portE &= ~(0x01 << 3);
+        *portE |= 0x01 << 5;
+        *portJ &= ~(0x01 << 1);
+        break;
+
+      case 2:
+        *portJ &= ~(0x01);
+        *portE |= 0x01 << 3;
+        *portE &= ~(0x01 << 5);
+        *portJ &= ~(0x01 << 1);
+        break;
+
+      case 3:
+        *portJ &= ~(0x01);
+        *portE &= ~(0x01 << 3);
+        *portE &= ~(0x01 << 5);
+        *portJ |= 0x01 << 1;
+        break;
     }
 
     //Check if a minute has passed for LCD updates
