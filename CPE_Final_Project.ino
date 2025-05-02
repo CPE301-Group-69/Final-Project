@@ -84,13 +84,13 @@ unsigned int currentState = -1;
 unsigned int prevState = -1;
 
 void setup() {
-  U0Init(9600); // Serial initialization, same as Serial.begin(9600)
+  U0Init(9600);
 
   // Setup the ADC, LCD, and RTC
   adc_init();
   lcd.clear();
   lcdDisplay(hum1,hum2,hum3,temp1,temp2,temp3,false);
-  rtc.begin(); // adjust with rtc.adjust(DateTime(<year>, <month>, <day>, <24-hour>, <minute>, <second>));
+  rtc.begin();
   currentState = 0;
 
   // Set all I/O
@@ -100,11 +100,11 @@ void setup() {
   *portDDRE |= (0x01 << 3); //pin 5 (Blue LED/RUNNING)
   *portDDRB &= ~(0x01 << 7); //pin 13 (Reset Button)
   *portB &= ~(0x01 << 7); //pin 13 (Reset Button)
-  *portDDRH |= 0x01 << 3;//pin 6 (DC Motor)
-  *portH &= ~(0x01<< 3); //pin 6 (DC Motor ON)
+  *portDDRH |= 0x01 << 3; //pin 6 (DC Motor)
+  *portH &= ~(0x01<< 3); //pin 6 (DC Motor OFF)
   *portDDRL &= ~(0x01); //pin 49 (Stepper Motor Button)
 
-  // Configure Interrupt (on pin 2)
+  // Configure Interrupt Input (on pin 2)
   *portDDRE |= ~(0x01 << 4); //input pullup (State Interrupt)
   *portE |= (0x01 << 4); //input pullup (State Interrupt)
   attachInterrupt(digitalPinToInterrupt(2), changeState, RISING);
@@ -212,7 +212,7 @@ void loop() {
     prevState = currentState;
   }
 
-  //If state is true run all required checks
+  //If state is true run all required checks, else turn off everything but yellow light
   if(state){
     //Check if vent button has been pressed 
     if(*pinL & (0x01)){
