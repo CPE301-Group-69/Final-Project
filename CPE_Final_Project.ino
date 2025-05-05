@@ -406,7 +406,6 @@ bool temperatureIsHigh(){
 void openVent(){
   myStepper.setSpeed(15);
   myStepper.step(stepsPerRevolution);
-  delay(1000);
   myStepper.step(0);
 }
 
@@ -414,7 +413,6 @@ void openVent(){
 void closeVent(){
   myStepper.setSpeed(15);
   myStepper.step(-stepsPerRevolution);
-  delay(1000);
   myStepper.step(0);
 }
 
